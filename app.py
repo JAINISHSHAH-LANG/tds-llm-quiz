@@ -1,31 +1,38 @@
-from flask import Flask, request, jsonify
-import requests
-from bs4 import BeautifulSoup
-import os
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
-app = Flask(__name__)
+app = FastAPI()
 
-# Your secret from Google Form
-MY_SECRET = "My name is Jainish Shah. I am doing a dual degree. I am doing Diploma in Data Science and Programming from IIT Madras. Additionally I am doing B.Tech in Electronics and Communication Engineering from Institute of Technology, Nirma University. Hey! This is the secret key for my Tools in Data Science Project 2."
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.route("/solve_quiz", methods=["POST"])
-def solve_quiz():
-    try:
-        data = request.get_json(force=True)
-    except:
-        return jsonify({"error": "Invalid JSON"}), 400
+# Request model
+class Submission(BaseModel):
+    email: str
+    secret: str
+    url: str
+    answer: str
 
-    email = data.get("email")
-    secret = data.get("secret")
-    url = data.get("url")
+@app.get("/")
+def home():
+    return {"message": "API is live. Use POST /submit"}
 
-    # Check secret
-    if secret != MY_SECRET:
-        return jsonify({"error": "Invalid secret"}), 403
-
-    # Here you would write your code to fetch the quiz page, solve it, and submit
-    # For demo, we just return a fixed response
-    return jsonify({"status": "success", "message": "Quiz solved placeholder", "url": url}), 200
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+@app.post("/submit")
+def submit(data: Submission):
+    # Validation example
+    if data.answer.strip() == "42":
+        return {
+            "status": "correct",
+            "next": "https://tds-llm-analysis.s-anand.net/project2",
+            "message": "Correct answer. Proceed to next step."
+        }
+    else:
+        return {
+            "status": "incorrect",
+            "message": "Wrong answer. Try again."
+        }
