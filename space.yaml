@@ -1,0 +1,10 @@
+title: TDS LLM Quiz Solver
+sdk: gradio
+app_file: app.py
+description: "A Gradio-based Space to solve quizzes using LLMs. Developed by Jainish Shah."
+license: apache-2.0
+tags:
+  - LLM
+  - quiz
+  - gradio
+  - AI
