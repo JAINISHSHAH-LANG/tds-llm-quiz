@@ -1,54 +1,31 @@
-# app.py
 from flask import Flask, request, jsonify
-import os
-import openai
 import requests
+from bs4 import BeautifulSoup
+import os
 
 app = Flask(__name__)
 
-# Load API key from environment variable (DO NOT hardcode!)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Your secret from Google Form
+MY_SECRET = "My name is Jainish Shah. I am doing a dual degree. I am doing Diploma in Data Science and Programming from IIT Madras. Additionally I am doing B.Tech in Electronics and Communication Engineering from Institute of Technology, Nirma University. Hey! This is the secret key for my Tools in Data Science Project 2."
 
 @app.route("/solve_quiz", methods=["POST"])
 def solve_quiz():
     try:
-        data = request.get_json()
-        email = data.get("email")
-        secret = data.get("secret")
-        url = data.get("url")
+        data = request.get_json(force=True)
+    except:
+        return jsonify({"error": "Invalid JSON"}), 400
 
-        if not all([email, secret, url]):
-            return jsonify({"error": "Missing one of email, secret, or url"}), 400
+    email = data.get("email")
+    secret = data.get("secret")
+    url = data.get("url")
 
-        # Example: fetch quiz data from URL (assuming JSON response)
-        resp = requests.get(url)
-        if resp.status_code != 200:
-            return jsonify({"error": "Could not fetch quiz data"}), 400
-        quiz_data = resp.json()  # expecting JSON structure
+    # Check secret
+    if secret != MY_SECRET:
+        return jsonify({"error": "Invalid secret"}), 403
 
-        # Build prompt for OpenAI
-        prompt = f"""
-        Solve the following quiz for the student {email}.
-        Secret info: {secret}
-        Quiz Data: {quiz_data}
-        Provide answers in JSON format.
-        """
-
-        # Call OpenAI GPT API
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,
-            temperature=0
-        )
-
-        answer = response["choices"][0]["message"]["content"]
-
-        return jsonify({"email": email, "answers": answer})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+    # Here you would write your code to fetch the quiz page, solve it, and submit
+    # For demo, we just return a fixed response
+    return jsonify({"status": "success", "message": "Quiz solved placeholder", "url": url}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
